@@ -63,7 +63,7 @@ two species increases, but note that this has not been formally benchmarked.
 ### What is the longest sequence the model can take as input?
 
 1MB (precisely 2^20 base-pairs long). Other sequence lengths are also supported:
-\~2KB, \~16KB, \~100KB, \~500KB.
+\~16KB, \~100KB, \~500KB.
 
 ### How do I request predictions for a sequence with a length that is not in the list of supported lengths?
 

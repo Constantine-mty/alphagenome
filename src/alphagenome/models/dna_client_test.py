@@ -422,17 +422,17 @@ class ClientTest(parameterized.TestCase):
       (
           dict(
               requested_output_types=[*dna_client.OutputType],
-              sequence_length=2048,
+              sequence_length=16_384,
               expected=dna_client.Output(
                   atac=track_data.TrackData(
-                      values=np.zeros((2048, 32), dtype=np.float32),
+                      values=np.zeros((16_384, 32), dtype=np.float32),
                       metadata=pd.DataFrame({
                           'name': [f'{i}' for i in range(32)],
                           'strand': ['.'] * 32,
                       }),
                   ),
                   rna_seq=track_data.TrackData(
-                      values=np.zeros((2048, 64), dtype=np.float32),
+                      values=np.zeros((16_384, 64), dtype=np.float32),
                       metadata=pd.DataFrame({
                           'name': [f'{i}' for i in range(64)],
                           'strand': ['.'] * 64,
@@ -465,11 +465,11 @@ class ClientTest(parameterized.TestCase):
           ),
           dict(
               requested_output_types={dna_client.OutputType.CONTACT_MAPS},
-              sequence_length=2048,
+              sequence_length=16_384,
               expected=dna_client.Output(),
           ),
       ),
-      bytes_per_chunk=[0, 128],
+      bytes_per_chunk=[0, 1024],
       model_version=[None, dna_client.ModelVersion.FOLD_0],
       with_interval=[True, False],
   )
@@ -538,10 +538,10 @@ class ClientTest(parameterized.TestCase):
     mock_stream.assert_called_once()
 
   @parameterized.product(
-      sequence_length=[dna_client.SEQUENCE_LENGTH_2KB],
+      sequence_length=[dna_client.SEQUENCE_LENGTH_16KB],
       num_predictions=[1, 4],
       num_workers=[1, 4],
-      bytes_per_chunk=[0, 128],
+      bytes_per_chunk=[0, 1024],
       with_interval=[True, False],
   )
   def test_predict_sequences(
@@ -594,7 +594,7 @@ class ClientTest(parameterized.TestCase):
     model = dna_client.DnaClient(channel=mock_channel)
     with self.assertRaises(grpc.RpcError):
       model.predict_sequences(
-          ['A' * dna_client.SEQUENCE_LENGTH_2KB],
+          ['A' * dna_client.SEQUENCE_LENGTH_16KB],
           ontology_terms=None,
           requested_outputs=[*dna_client.OutputType],
       )
@@ -618,15 +618,15 @@ class ClientTest(parameterized.TestCase):
       (
           dict(
               requested_output_types={dna_client.OutputType.ATAC},
-              interval=genome.Interval('chr1', 0, 2048),
+              interval=genome.Interval('chr1', 0, 16_384),
               expected=dna_client.Output(
                   atac=track_data.TrackData(
-                      values=np.zeros((2048, 32), dtype=np.float32),
+                      values=np.zeros((16_384, 32), dtype=np.float32),
                       metadata=pd.DataFrame({
                           'name': [f'{i}' for i in range(32)],
                           'strand': ['.'] * 32,
                       }),
-                      interval=genome.Interval('chr1', 0, 2048),
+                      interval=genome.Interval('chr1', 0, 16_384),
                   )
               ),
           ),
@@ -635,7 +635,7 @@ class ClientTest(parameterized.TestCase):
           dna_client.Organism.HOMO_SAPIENS,
           dna_client.Organism.MUS_MUSCULUS,
       ],
-      bytes_per_chunk=[0, 128],
+      bytes_per_chunk=[0, 1024],
       model_version=[None, dna_client.ModelVersion.FOLD_0],
   )
   def test_predict_interval(
@@ -676,14 +676,14 @@ class ClientTest(parameterized.TestCase):
 
   @parameterized.product(
       intervals=[
-          [genome.Interval('chr1', 0, 2048)],
+          [genome.Interval('chr1', 0, 16_384)],
           [
-              genome.Interval('chr1', 0, 2048),
-              genome.Interval('chr1', 2048, 4096),
+              genome.Interval('chr1', 0, 16_384),
+              genome.Interval('chr1', 16_384, 32_768),
           ],
       ],
       num_workers=[1, 4],
-      bytes_per_chunk=[0, 128],
+      bytes_per_chunk=[0, 1024],
   )
   def test_predict_intervals(self, intervals, num_workers, bytes_per_chunk):
     examples = {
@@ -725,7 +725,7 @@ class ClientTest(parameterized.TestCase):
     model = dna_client.DnaClient(channel=mock_channel)
     with self.assertRaises(grpc.RpcError):
       model.predict_intervals(
-          [genome.Interval('chr1', 0, 2048)],
+          [genome.Interval('chr1', 0, 16_384)],
           ontology_terms=None,
           requested_outputs=[*dna_client.OutputType],
       )
@@ -736,27 +736,27 @@ class ClientTest(parameterized.TestCase):
       (
           dict(
               requested_output_types={dna_client.OutputType.ATAC},
-              interval=genome.Interval('chr1', 0, 2048),
+              interval=genome.Interval('chr1', 0, 16_384),
               variant=genome.Variant('chr1', 1000, 'A', 'C'),
               expected=(
                   dna_client.Output(
                       atac=track_data.TrackData(
-                          values=np.zeros((2048, 32), dtype=np.float32),
+                          values=np.zeros((16_384, 32), dtype=np.float32),
                           metadata=pd.DataFrame({
                               'name': [f'{i}' for i in range(32)],
                               'strand': ['.'] * 32,
                           }),
-                          interval=genome.Interval('chr1', 0, 2048),
+                          interval=genome.Interval('chr1', 0, 16_384),
                       )
                   ),
                   dna_client.Output(
                       atac=track_data.TrackData(
-                          values=np.ones((2048, 32), dtype=np.float32),
+                          values=np.ones((16_384, 32), dtype=np.float32),
                           metadata=pd.DataFrame({
                               'name': [f'{i}' for i in range(32)],
                               'strand': ['.'] * 32,
                           }),
-                          interval=genome.Interval('chr1', 0, 2048),
+                          interval=genome.Interval('chr1', 0, 16_384),
                       )
                   ),
               ),
@@ -766,7 +766,7 @@ class ClientTest(parameterized.TestCase):
           dna_client.Organism.HOMO_SAPIENS,
           dna_client.Organism.MUS_MUSCULUS,
       ],
-      bytes_per_chunk=[0, 128],
+      bytes_per_chunk=[0, 1024],
       model_version=[None, dna_client.ModelVersion.FOLD_1],
   )
   def test_predict_variant(
@@ -815,10 +815,10 @@ class ClientTest(parameterized.TestCase):
 
   @parameterized.product(
       intervals=[
-          genome.Interval('chr1', 0, 2048),
+          genome.Interval('chr1', 0, 16_384),
           [
-              genome.Interval('chr1', 0, 2048),
-              genome.Interval('chr1', 2048, 4096),
+              genome.Interval('chr1', 0, 16_384),
+              genome.Interval('chr1', 16_384, 32_768),
           ],
       ],
       variants=[
@@ -828,7 +828,7 @@ class ClientTest(parameterized.TestCase):
           ],
       ],
       num_workers=[1, 4],
-      bytes_per_chunk=[0, 128],
+      bytes_per_chunk=[0, 2048],
   )
   def test_predict_variants(
       self, intervals, variants, num_workers, bytes_per_chunk
@@ -879,7 +879,7 @@ class ClientTest(parameterized.TestCase):
     model = dna_client.DnaClient(channel=mock_channel)
     with self.assertRaises(grpc.RpcError):
       model.predict_variants(
-          [genome.Interval('chr1', 0, 2048)],
+          [genome.Interval('chr1', 0, 16_384)],
           [genome.Variant('chr1', 1000, 'A', 'C')],
           ontology_terms=None,
           requested_outputs=[*dna_client.OutputType],
@@ -894,7 +894,10 @@ class ClientTest(parameterized.TestCase):
         ValueError, 'Intervals and variants must have the same length'
     ):
       model.predict_variants(
-          [genome.Interval('chr1', 0, 2048), genome.Interval('chr1', 0, 2048)],
+          [
+              genome.Interval('chr1', 0, 16_384),
+              genome.Interval('chr1', 16_384, 32_768),
+          ],
           [genome.Variant('chr1', 1000, 'A', 'C')],
           ontology_terms=None,
           requested_outputs=[*dna_client.OutputType],
@@ -983,7 +986,7 @@ class ClientTest(parameterized.TestCase):
   @parameterized.product(
       (
           dict(
-              interval=genome.Interval('chr1', 0, 2048),
+              interval=genome.Interval('chr1', 0, 16_384),
               scorers=[
                   interval_scorers.GeneMaskScorer(
                       requested_output=dna_client.OutputType.ATAC,
@@ -1011,7 +1014,7 @@ class ClientTest(parameterized.TestCase):
                       'strand': ['.'] * 10,
                   }),
                   uns={
-                      'interval': genome.Interval('chr1', 0, 2048),
+                      'interval': genome.Interval('chr1', 0, 16_384),
                       'interval_scorer': interval_scorers.GeneMaskScorer(
                           requested_output=dna_client.OutputType.ATAC,
                           width=2_001,
@@ -1034,7 +1037,7 @@ class ClientTest(parameterized.TestCase):
                       'strand': ['.'] * 10,
                   }),
                   uns={
-                      'interval': genome.Interval('chr1', 0, 2048),
+                      'interval': genome.Interval('chr1', 0, 16_384),
                       'interval_scorer': interval_scorers.GeneMaskScorer(
                           requested_output=dna_client.OutputType.DNASE,
                           width=501,
@@ -1050,7 +1053,7 @@ class ClientTest(parameterized.TestCase):
           dna_client.Organism.HOMO_SAPIENS,
           dna_client.Organism.MUS_MUSCULUS,
       ],
-      bytes_per_chunk=[0, 128],
+      bytes_per_chunk=[0, 1024],
   )
   def test_score_interval(
       self,
@@ -1120,7 +1123,7 @@ class ClientTest(parameterized.TestCase):
         ValueError, 'Duplicate interval scorers requested'
     ):
       model.score_interval(
-          interval=genome.Interval('chr1', 0, 2048),
+          interval=genome.Interval('chr1', 0, 16_384),
           interval_scorers=[
               interval_scorers.GeneMaskScorer(
                   requested_output=dna_client.OutputType.DNASE,
@@ -1137,11 +1140,11 @@ class ClientTest(parameterized.TestCase):
     model = dna_client.DnaClient(channel=mock.create_autospec(grpc.Channel))
     with self.assertRaisesRegex(ValueError, 'must have widths <= interval'):
       model.score_interval(
-          interval=genome.Interval('chr1', 0, 2048),
+          interval=genome.Interval('chr1', 0, 16_384),
           interval_scorers=[
               interval_scorers.GeneMaskScorer(
                   requested_output=dna_client.OutputType.DNASE,
-                  width=10_001,
+                  width=100_001,
                   aggregation_type=(
                       interval_scorers.IntervalAggregationType.SUM
                   ),
@@ -1171,13 +1174,13 @@ class ClientTest(parameterized.TestCase):
               )
           )
       model.score_interval(
-          interval=genome.Interval('chr1', 0, 2048), interval_scorers=scorers
+          interval=genome.Interval('chr1', 0, 16_384), interval_scorers=scorers
       )
 
   @parameterized.product(
       (
           dict(
-              interval=genome.Interval('chr1', 0, 2048),
+              interval=genome.Interval('chr1', 0, 16_384),
               scorers=[
                   interval_scorers.GeneMaskScorer(
                       requested_output=dna_client.OutputType.ATAC,
@@ -1205,7 +1208,7 @@ class ClientTest(parameterized.TestCase):
                       'strand': ['.'] * 10,
                   }),
                   uns={
-                      'interval': genome.Interval('chr1', 0, 2048),
+                      'interval': genome.Interval('chr1', 0, 16_384),
                       'interval_scorer': interval_scorers.GeneMaskScorer(
                           requested_output=dna_client.OutputType.ATAC,
                           width=2_001,
@@ -1228,7 +1231,7 @@ class ClientTest(parameterized.TestCase):
                       'strand': ['.'] * 10,
                   }),
                   uns={
-                      'interval': genome.Interval('chr1', 0, 2048),
+                      'interval': genome.Interval('chr1', 0, 16_384),
                       'interval_scorer': interval_scorers.GeneMaskScorer(
                           requested_output=dna_client.OutputType.DNASE,
                           width=501,
@@ -1244,7 +1247,7 @@ class ClientTest(parameterized.TestCase):
           dna_client.Organism.HOMO_SAPIENS,
           dna_client.Organism.MUS_MUSCULUS,
       ],
-      bytes_per_chunk=[0, 128],
+      bytes_per_chunk=[0, 1024],
   )
   def test_score_intervals(
       self,
@@ -1281,7 +1284,7 @@ class ClientTest(parameterized.TestCase):
   @parameterized.product(
       (
           dict(
-              interval=genome.Interval('chr1', 0, 2048),
+              interval=genome.Interval('chr1', 0, 16_384),
               variant=genome.Variant('chr1', 1000, 'A', 'C'),
               scorers=[
                   variant_scorers.CenterMaskScorer(
@@ -1307,7 +1310,7 @@ class ClientTest(parameterized.TestCase):
                   }),
                   uns={
                       'variant': genome.Variant('chr1', 1000, 'A', 'C'),
-                      'interval': genome.Interval('chr1', 0, 2048),
+                      'interval': genome.Interval('chr1', 0, 16_384),
                       'variant_scorer': variant_scorers.CenterMaskScorer(
                           requested_output=dna_client.OutputType.ATAC,
                           width=10_001,
@@ -1331,7 +1334,7 @@ class ClientTest(parameterized.TestCase):
                   }),
                   uns={
                       'variant': genome.Variant('chr1', 1000, 'A', 'C'),
-                      'interval': genome.Interval('chr1', 0, 2048),
+                      'interval': genome.Interval('chr1', 0, 16_384),
                       'variant_scorer': variant_scorers.GeneMaskLFCScorer(
                           requested_output=dna_client.OutputType.RNA_SEQ,
                       ),
@@ -1348,7 +1351,7 @@ class ClientTest(parameterized.TestCase):
                   }),
                   uns={
                       'variant': genome.Variant('chr1', 1000, 'A', 'C'),
-                      'interval': genome.Interval('chr1', 0, 2048),
+                      'interval': genome.Interval('chr1', 0, 16_384),
                       'variant_scorer': variant_scorers.CenterMaskScorer(
                           requested_output=dna_client.OutputType.ATAC,
                           width=10_001,
@@ -1366,7 +1369,7 @@ class ClientTest(parameterized.TestCase):
                   }),
                   uns={
                       'variant': genome.Variant('chr1', 1000, 'A', 'C'),
-                      'interval': genome.Interval('chr1', 0, 2048),
+                      'interval': genome.Interval('chr1', 0, 16_384),
                       'variant_scorer': variant_scorers.GeneMaskLFCScorer(
                           requested_output=dna_client.OutputType.RNA_SEQ,
                       ),
@@ -1378,7 +1381,7 @@ class ClientTest(parameterized.TestCase):
           dna_client.Organism.HOMO_SAPIENS,
           dna_client.Organism.MUS_MUSCULUS,
       ],
-      bytes_per_chunk=[0, 128],
+      bytes_per_chunk=[0, 1024],
   )
   def test_score_variant(
       self,
@@ -1420,7 +1423,7 @@ class ClientTest(parameterized.TestCase):
         ValueError, 'Duplicate variant scorers requested'
     ):
       model.score_variant(
-          interval=genome.Interval('chr1', 0, 2048),
+          interval=genome.Interval('chr1', 0, 16_384),
           variant=genome.Variant('chr1', 1000, 'A', 'C'),
           variant_scorers=[
               variant_scorers.GeneMaskLFCScorer(
@@ -1440,7 +1443,7 @@ class ClientTest(parameterized.TestCase):
         " Supported organisms: ['HOMO_SAPIENS']",
     ):
       model.score_variant(
-          interval=genome.Interval('chr1', 0, 2048),
+          interval=genome.Interval('chr1', 0, 16_384),
           variant=genome.Variant('chr1', 1000, 'A', 'C'),
           variant_scorers=[variant_scorers.PolyadenylationScorer()],
           # The PaQTL scorer doesn't currently support mouse.
@@ -1467,7 +1470,7 @@ class ClientTest(parameterized.TestCase):
               )
           )
       model.score_variant(
-          interval=genome.Interval('chr1', 0, 2048),
+          interval=genome.Interval('chr1', 0, 16_384),
           variant=genome.Variant('chr1', 1000, 'A', 'C'),
           variant_scorers=variant_scorers_to_use,
       )
@@ -1493,7 +1496,7 @@ class ClientTest(parameterized.TestCase):
     mock_channel, mock_stream = _create_mock_channel_and_stream(_mock_generate)
     model = dna_client.DnaClient(channel=mock_channel)
     scores = model.score_variant(
-        interval=genome.Interval('chr1', 0, 2048),
+        interval=genome.Interval('chr1', 0, 16_384),
         variant=genome.Variant('chr1', 1000, 'A', 'C'),
         organism=organism,
     )
@@ -1507,7 +1510,7 @@ class ClientTest(parameterized.TestCase):
   @parameterized.product(
       (
           dict(
-              interval=genome.Interval('chr1', 0, 2048),
+              interval=genome.Interval('chr1', 0, 16_384),
               scorers=[
                   variant_scorers.CenterMaskScorer(
                       requested_output=dna_client.OutputType.ATAC,
@@ -1532,7 +1535,7 @@ class ClientTest(parameterized.TestCase):
                   'strand': ['.'] * 10,
               }),
               uns={
-                  'interval': genome.Interval('chr1', 0, 2048),
+                  'interval': genome.Interval('chr1', 0, 16_384),
                   'variant_scorer': variant_scorers.CenterMaskScorer(
                       requested_output=dna_client.OutputType.ATAC,
                       width=10_001,
@@ -1550,7 +1553,7 @@ class ClientTest(parameterized.TestCase):
                   'strand': ['.'] * 10,
               }),
               uns={
-                  'interval': genome.Interval('chr1', 0, 2048),
+                  'interval': genome.Interval('chr1', 0, 16_384),
                   'variant_scorer': variant_scorers.GeneMaskLFCScorer(
                       requested_output=dna_client.OutputType.RNA_SEQ,
                   ),
@@ -1568,7 +1571,7 @@ class ClientTest(parameterized.TestCase):
                   'strand': ['.'] * 10,
               }),
               uns={
-                  'interval': genome.Interval('chr1', 0, 2048),
+                  'interval': genome.Interval('chr1', 0, 16_384),
                   'variant_scorer': variant_scorers.SpliceJunctionScorer(),
               },
           ),
@@ -1588,7 +1591,7 @@ class ClientTest(parameterized.TestCase):
           dna_client.Organism.HOMO_SAPIENS,
           dna_client.Organism.MUS_MUSCULUS,
       ],
-      bytes_per_chunk=[0, 128],
+      bytes_per_chunk=[0, 1024],
   )
   def test_score_variants(
       self,
@@ -1639,7 +1642,7 @@ class ClientTest(parameterized.TestCase):
   @parameterized.product(
       (
           dict(
-              interval=genome.Interval('chr1', 0, 2048),
+              interval=genome.Interval('chr1', 0, 16_384),
               ism_interval=genome.Interval('chr1', 10, 11),
               scorers=[
                   variant_scorers.CenterMaskScorer(
@@ -1660,7 +1663,7 @@ class ClientTest(parameterized.TestCase):
                           'strand': ['.'] * 10,
                       }),
                       uns={
-                          'interval': genome.Interval('chr1', 0, 2048),
+                          'interval': genome.Interval('chr1', 0, 16_384),
                           'variant_scorer': variant_scorers.CenterMaskScorer(
                               requested_output=dna_client.OutputType.ATAC,
                               width=10_001,
@@ -1678,7 +1681,7 @@ class ClientTest(parameterized.TestCase):
               ],
           ),
           dict(
-              interval=genome.Interval('chr1', 0, 2048),
+              interval=genome.Interval('chr1', 0, 16_384),
               ism_interval=genome.Interval('chr1', 10, 21),
               scorers=[
                   variant_scorers.CenterMaskScorer(
@@ -1699,7 +1702,7 @@ class ClientTest(parameterized.TestCase):
                           'strand': ['.'] * 10,
                       }),
                       uns={
-                          'interval': genome.Interval('chr1', 0, 2048),
+                          'interval': genome.Interval('chr1', 0, 16_384),
                           'variant_scorer': variant_scorers.CenterMaskScorer(
                               requested_output=dna_client.OutputType.ATAC,
                               width=10_001,
@@ -1717,7 +1720,7 @@ class ClientTest(parameterized.TestCase):
                           'strand': ['.'] * 10,
                       }),
                       uns={
-                          'interval': genome.Interval('chr1', 0, 2048),
+                          'interval': genome.Interval('chr1', 0, 16_384),
                           'variant_scorer': (
                               variant_scorers.PolyadenylationScorer()
                           ),
@@ -1762,7 +1765,7 @@ class ClientTest(parameterized.TestCase):
               ],
           ),
       ),
-      bytes_per_chunk=[0, 128],
+      bytes_per_chunk=[0, 1024],
   )
   def test_score_ism_variant(
       self,
@@ -1810,7 +1813,7 @@ class ClientTest(parameterized.TestCase):
         ValueError, 'ISM interval must be on the positive strand.'
     ):
       model.score_ism_variants(
-          interval=genome.Interval('chr1', 0, 2048),
+          interval=genome.Interval('chr1', 0, 16_384),
           ism_interval=genome.Interval(
               'chr1', 10, 11, strand=genome.STRAND_NEGATIVE
           ),
@@ -1851,7 +1854,7 @@ class ClientTest(parameterized.TestCase):
         ValueError, 'Expected tensor_chunk, got "output" payload'
     ):
       _ = model.predict_sequence(
-          sequence='A' * 2048,
+          sequence='A' * 16_384,
           requested_outputs=[
               dna_client.OutputType.ATAC,
               dna_client.OutputType.RNA_SEQ,
@@ -1883,7 +1886,7 @@ class ClientTest(parameterized.TestCase):
         ValueError, 'Expected tensor_chunk, got end of stream'
     ):
       _ = model.predict_sequence(
-          sequence='A' * 2048,
+          sequence='A' * 16_384,
           requested_outputs=[dna_client.OutputType.ATAC],
           ontology_terms=None,
       )
