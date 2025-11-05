@@ -192,11 +192,14 @@ class TestTidyScores(absltest.TestCase):
             'ontology_curie': ['UBERON:0002107', 'UBERON:0006566'],
             'biosample_name': ['liver', 'left ventricle myocardium'],
             'biosample_type': ['tissue', 'tissue'],
+            'biosample_life_stage': ['adult', 'embryonic'],
             'gtex_tissue': ['Liver', 'Heart_Left_Ventricle'],
+            'endedness': ['paired', 'paired'],
         }),
         uns={
             'variant': 'chr1:100:A>C',
             'interval': 'chr1:90-110',
+            'endedness': ['paired', 'paired'],
             'variant_scorer': self.gene_scorer,
         },
         layers={
@@ -236,6 +239,7 @@ class TestTidyScores(absltest.TestCase):
                 'primary_cell',
                 'primary_cell',
             ],
+            'data_source': ['gtex', 'gtex', 'gtex', 'gtex'],
         }),
         uns={
             'variant': 'chr2:200:G>T',
@@ -288,6 +292,7 @@ class TestTidyScores(absltest.TestCase):
                 'in_vitro_differentiated_cells',
                 'tissue',
             ],
+            'genetically_modified': [True, True, False],
             'gtex_tissue': ['', '', ''],
         }),
         uns={
@@ -470,11 +475,13 @@ class TestTidyScores(absltest.TestCase):
             'left ventricle myocardium',
         ],
         'biosample_type': ['tissue', 'tissue', 'tissue'],
+        'biosample_life_stage': ['adult', 'embryonic', 'embryonic'],
         'gtex_tissue': [
             'Liver',
             'Heart_Left_Ventricle',
             'Heart_Left_Ventricle',
         ],
+        'endedness': ['paired', 'paired', 'paired'],
         'raw_score': [1, 4, 6],
         'quantile_score': [1, 0, -1],
     })
@@ -547,6 +554,7 @@ class TestTidyScores(absltest.TestCase):
             'primary_cell',
             'primary_cell',
         ],
+        'data_source': ['gtex', 'gtex', 'gtex', 'gtex'],
         'raw_score': [5, 6, 7, 8],
     })
     pd.testing.assert_frame_equal(df, expected)
@@ -623,6 +631,7 @@ class TestTidyScores(absltest.TestCase):
             'tissue',
         ],
         'gtex_tissue': ['', '', '', ''],
+        'genetically_modified': [True, True, False, False],
         'raw_score': [5, 9, 7, 10],
     })
     pd.testing.assert_frame_equal(df, expected)

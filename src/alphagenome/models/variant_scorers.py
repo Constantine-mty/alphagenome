@@ -729,7 +729,11 @@ def tidy_anndata(
         'ontology_curie',
         'biosample_name',
         'biosample_type',
+        'biosample_life_stage',
         'gtex_tissue',
+        'data_source',
+        'endedness',
+        'genetically_modified',
         'transcription_factor',
         'histone_mark',
     ]
