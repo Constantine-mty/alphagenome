@@ -65,6 +65,9 @@ two species increases, but note that this has not been formally benchmarked.
 1MB (precisely 2^20 base-pairs long). Other sequence lengths are also supported:
 \~16KB, \~100KB, \~500KB.
 
+We recommend where possible to make predictions at 1MB for the best possible
+results.
+
 ### How do I request predictions for a sequence with a length that is not in the list of supported lengths?
 
 You can use
