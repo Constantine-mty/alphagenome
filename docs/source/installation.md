@@ -16,7 +16,7 @@ prevent conflicts with your system's Python environment.
 ## Google Colab
 
 The tutorial notebooks include a cell with the commands necessary to install
-`alphagenome` into a colab runtime.
+`alphagenome` into a Colab runtime.
 
 ### Add API key to secrets
 

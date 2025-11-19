@@ -7,7 +7,7 @@ Frequently asked questions.
 ### How do I make predictions for a specific genomic region?
 
 You can define any region in either the human or mouse genome, and use the API
-to predict various outputs. See the [quick start colab](colabs/quick_start) for
+to predict various outputs. See the [quick start Colab](colabs/quick_start) for
 a demonstration.
 
 ### How do I specify a genomic region?
