@@ -292,7 +292,7 @@ class Output:
     return self.map_track_data(sub_track_data)
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass(frozen=True, kw_only=True)
 class OutputMetadata:
   """Metadata detailing the content of model output.
 
