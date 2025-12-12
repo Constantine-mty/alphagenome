@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1]
+
+### Changed
+
+-   Move ModelVersion enum to `dna_model` base class.
+-   Add less-than operator to Organism enum.
+-   Make `OutputMetadata` keyword-only, to better support derived classes.
+
+### Removed
+
+-   Remove conversion from NumPy scalar to int in `Interval`.
+
 ## [0.5.0]
 
 ### Added
