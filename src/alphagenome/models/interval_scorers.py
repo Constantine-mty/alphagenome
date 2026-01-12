@@ -68,7 +68,7 @@ SUPPORTED_OUTPUT_TYPES = immutabledict.immutabledict({
 })
 
 SUPPORTED_WIDTHS = immutabledict.immutabledict({
-    BaseIntervalScorer.GENE_MASK: [501, 2001, 10_001, 100_001, 200_001],
+    BaseIntervalScorer.GENE_MASK: [None, 501, 2001, 10_001, 100_001, 200_001],
 })
 
 
@@ -92,7 +92,7 @@ class GeneMaskScorer:
   """
 
   requested_output: dna_output.OutputType
-  width: int
+  width: int | None
   aggregation_type: IntervalAggregationType
 
   @property

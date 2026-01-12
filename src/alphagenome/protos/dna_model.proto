@@ -283,7 +283,7 @@ message GeneMaskIntervalScorer {
   OutputType requested_output = 1;
 
   // Requested width.
-  int64 width = 2;
+  optional int64 width = 2;
 
   // Requested aggregation type.
   IntervalAggregationType aggregation_type = 3;
